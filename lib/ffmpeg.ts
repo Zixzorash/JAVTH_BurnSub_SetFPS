@@ -1,20 +1,26 @@
-import { createFFmpeg, fetchFile } from '@ffmpeg/ffmpeg';
+import { FFmpeg } from '@ffmpeg/ffmpeg';
+import { fetchFile } from '@ffmpeg/util';
 
-const ffmpeg = createFFmpeg({ log: true });
+const ffmpeg = new FFmpeg();
 
 export async function burnSubtitlesAndChangeFPS(
   videoFile: File,
   subtitleFile: File,
   targetFps: number = 30
 ): Promise<Blob> {
-  if (!ffmpeg.isLoaded()) await ffmpeg.load();
+  if (!ffmpeg.loaded) {
+    await ffmpeg.load({
+      coreURL: 'https://unpkg.com/@ffmpeg/core@0.12.6/dist/umd/ffmpeg-core.js',
+      wasmURL: 'https://unpkg.com/@ffmpeg/core@0.12.6/dist/umd/ffmpeg-core.wasm',
+    });
+  }
 
-  ffmpeg.FS('writeFile', 'input.mp4', await fetchFile(videoFile));
-  ffmpeg.FS('writeFile', 'subtitle.srt', await fetchFile(subtitleFile));
+  await ffmpeg.writeFile('input.mp4', await fetchFile(videoFile));
+  await ffmpeg.writeFile('subtitle.srt', await fetchFile(subtitleFile));
 
   const outputName = 'output.mp4';
 
-  await ffmpeg.run(
+  await ffmpeg.exec([
     '-i', 'input.mp4',
     '-vf', `fps=${targetFps},subtitles=subtitle.srt:force_style='FontSize=24,PrimaryColour=&Hffffff&,OutlineColour=&H000000&,BorderStyle=3'`,
     '-c:v', 'libx264',
@@ -23,8 +29,8 @@ export async function burnSubtitlesAndChangeFPS(
     '-c:a', 'aac',
     '-b:a', '128k',
     outputName
-  );
+  ]);
 
-  const data = ffmpeg.FS('readFile', outputName);
+  const data = await ffmpeg.readFile(outputName);
   return new Blob([data.buffer], { type: 'video/mp4' });
 }
