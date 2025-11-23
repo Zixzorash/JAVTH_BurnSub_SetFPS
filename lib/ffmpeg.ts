@@ -32,6 +32,11 @@ export async function burnSubtitlesAndChangeFPS(
   ]);
 
   const data = await ffmpeg.readFile(outputName);
-  // แก้ TypeScript error: สร้าง Uint8Array ใหม่จาก data แล้วส่งตรงให้ Blob (ปลอดภัยและ compatible 100%)
-  return new Blob([new Uint8Array(data)], { type: 'video/mp4' });
+
+  // แก้ TypeScript ทุกกรณี: data อาจเป็น string หรือ Uint8Array
+  const uint8Array = typeof data === 'string' 
+    ? new TextEncoder().encode(data) 
+    : data as Uint8Array;
+
+  return new Blob([uint8Array], { type: 'video/mp4' });
 }
