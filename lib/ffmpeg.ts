@@ -38,5 +38,6 @@ export async function burnSubtitlesAndChangeFPS(
     ? new TextEncoder().encode(data) 
     : data as Uint8Array;
 
-  return new Blob([uint8Array], { type: 'video/mp4' });
+  return new Blob([uint8Array as any], { type: 'video/mp4' });
+
 }
