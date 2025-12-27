@@ -11,7 +11,7 @@
     "@ffmpeg/core": "^0.12.6",
     "@ffmpeg/ffmpeg": "^0.12.15",
     "@ffmpeg/util": "^0.12.2",
-    "next": "15.0.1",
+    "next": "15.0.7",
     "react": "18.3.1",
     "react-dom": "18.3.1"
   },
